@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request
 from flask_sqlalchemy import SQLAlchemy
+from sendemail import send_email
 
 app = Flask(__name__)
 
-ENV = 'dev'
+ENV = 'prod'
 
 if ENV == 'dev':
     app.debug = True
@@ -12,7 +13,7 @@ if ENV == 'dev':
     # dev
 else:
     app.debug = False
-    app.config['SQLALCHEMY_DATABASE_URI'] = ''
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://ayhqxusnpearxc:c83a6f4f95c63037131c7246be73e8ff758ebebfcd71c5baf51ae509225afb5d@ec2-3-224-251-47.compute-1.amazonaws.com:5432/d7ctisv30tnbsl'
     # prod
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -55,6 +56,7 @@ def submit():
             data = Feedback(customer, dealer, rating, comments)
             db.session.add(data)
             db.session.commit()
+            send_email(customer, dealer, rating, comments)
             return render_template('success.html')
         return render_template('index.html', message='You have already submitted feedback')
 if __name__ == '__main__':
